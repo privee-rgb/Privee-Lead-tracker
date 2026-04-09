@@ -17,12 +17,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .user-tabs{display:flex;gap:3px;background:#fff;border:0.5px solid #e0ddd8;border-radius:20px;padding:3px}
 .utab{padding:4px 14px;border-radius:16px;font-size:12px;border:none;cursor:pointer;background:transparent;color:#888;font-weight:500;transition:all 0.15s}
 .utab.active{background:#E078A1;color:#fff}
-.goal-box{background:#fff;border:0.5px solid #e0ddd8;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+.goal-box{background:#fff;border:0.5px solid #e0ddd8;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color 0.15s, box-shadow 0.15s}
+.goal-box:hover{border-color:#E078A1;box-shadow:0 2px 12px rgba(224,120,161,0.12)}
 .goal-nums{font-size:12px;color:#888;white-space:nowrap}
 .goal-nums strong{color:#1a1a1a;font-size:15px}
 .goal-bar{width:90px;height:5px;background:#f0ede8;border-radius:3px}
 .goal-fill{height:100%;border-radius:3px;background:#E078A1;transition:width 0.4s}
 .goal-pct{font-size:11px;color:#aaa;min-width:28px;text-align:right}
+
+/* ── Weekly history modal ── */
+.wh-table{width:100%;border-collapse:separate;border-spacing:0 4px}
+.wh-table th{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#aaa;font-weight:600;text-align:left;padding:6px 10px}
+.wh-table td{padding:8px 10px;font-size:13px;background:#f8f7f5;color:#1a1a1a}
+.wh-table tr td:first-child{border-radius:8px 0 0 8px}
+.wh-table tr td:last-child{border-radius:0 8px 8px 0}
+.wh-current td{background:#fce8f1;font-weight:600}
+.wh-bar-cell{width:120px}
+.wh-bar-bg{width:100%;height:6px;background:#f0ede8;border-radius:3px;overflow:hidden}
+.wh-bar-fill{height:100%;border-radius:3px;background:#E078A1;transition:width 0.4s}
+.wh-hit{color:#3b6d11}
+.wh-miss{color:#a32d2d}
+.wh-summary{display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap}
+.wh-stat{background:#f8f7f5;border-radius:10px;padding:12px 16px;flex:1;min-width:120px;text-align:center}
+.wh-stat-val{font-size:22px;font-weight:700;color:#1a1a1a}
+.wh-stat-lbl{font-size:11px;color:#888;margin-top:2px}
 
 /* ── Config banner ── */
 .config-banner{background:#fff8e1;border:0.5px solid #ffe082;border-radius:10px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#7a5200;display:flex;align-items:center;gap:10px}
@@ -153,7 +171,7 @@ select.flt{padding:8px 10px;border:0.5px solid #e0ddd8;border-radius:10px;font-s
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         Sign out
       </button>
-      <div class="goal-box">
+      <div class="goal-box" onclick="showWeeklyHistory()" title="Click to view weekly history">
         <div class="goal-nums"><strong id="gc">0</strong> / 250 this week</div>
         <div class="goal-bar"><div class="goal-fill" id="gf" style="width:0%"></div></div>
         <div class="goal-pct" id="gpct">0%</div>
@@ -206,15 +224,81 @@ let activeUser = 'all';
 let activeTab = 'outreach';
 let isSaving = false;
 
-// ── Utilities ───────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
-function weekStart() {
-  const d = new Date(), day = d.getDay();
+function weekStart(date) {
+  const d = date ? new Date(date) : new Date();
+  const day = d.getDay();
   const m = new Date(d);
   m.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
   m.setHours(0,0,0,0);
   return m.toISOString().split('T')[0];
+}
+
+function weekEnd(mondayStr) {
+  const d = new Date(mondayStr + 'T00:00:00');
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().split('T')[0];
+}
+
+function showWeeklyHistory() {
+  // Aggregate leads by the Monday of the week they were reached
+  const buckets = {};
+  leads.forEach(l => {
+    if (!l.dateReached) return;
+    const ws = weekStart(l.dateReached + 'T00:00:00');
+    if (!buckets[ws]) buckets[ws] = [];
+    buckets[ws].push(l);
+  });
+
+  const weeks = Object.keys(buckets).sort((a, b) => b.localeCompare(a));
+  const currentWs = weekStart();
+  const GOAL = 250;
+
+  // Summary stats
+  const totalLeads = leads.filter(l => l.dateReached).length;
+  const totalWeeks = weeks.length || 1;
+  const avgPerWeek = Math.round(totalLeads / totalWeeks);
+  const weeksHit = weeks.filter(w => buckets[w].length >= GOAL).length;
+
+  let rows = '';
+  weeks.forEach(ws => {
+    const count = buckets[ws].length;
+    const pct = Math.min(100, Math.round(count / GOAL * 100));
+    const isCurrent = ws === currentWs;
+    const we = weekEnd(ws);
+    const hitClass = count >= GOAL ? 'wh-hit' : (isCurrent ? '' : 'wh-miss');
+    rows += `<tr class="${isCurrent ? 'wh-current' : ''}">
+      <td>${fd(ws)} — ${fd(we)}${isCurrent ? ' <span style="font-size:10px;color:#E078A1;">(current)</span>' : ''}</td>
+      <td style="text-align:center"><span class="${hitClass}">${count}</span></td>
+      <td class="wh-bar-cell"><div class="wh-bar-bg"><div class="wh-bar-fill" style="width:${pct}%"></div></div></td>
+      <td style="text-align:right;font-size:12px;color:#aaa">${pct}%</td>
+    </tr>`;
+  });
+
+  if (!rows) {
+    rows = '<tr><td colspan="4" style="text-align:center;color:#bbb;padding:2rem">No outreach data yet</td></tr>';
+  }
+
+  showModal(`
+    <div class="mhead"><h2>📊 Weekly Outreach History</h2><button class="mcl" onclick="closeModal()">×</button></div>
+    <div class="mbody">
+      <div class="wh-summary">
+        <div class="wh-stat"><div class="wh-stat-val">${totalLeads}</div><div class="wh-stat-lbl">Total leads</div></div>
+        <div class="wh-stat"><div class="wh-stat-val">${avgPerWeek}</div><div class="wh-stat-lbl">Avg / week</div></div>
+        <div class="wh-stat"><div class="wh-stat-val">${weeksHit}</div><div class="wh-stat-lbl">Weeks hit 250</div></div>
+        <div class="wh-stat"><div class="wh-stat-val">${totalWeeks}</div><div class="wh-stat-lbl">Weeks tracked</div></div>
+      </div>
+      <table class="wh-table">
+        <thead><tr><th>Week</th><th style="text-align:center">Leads</th><th>Progress</th><th style="text-align:right">%</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="mfoot">
+      <button class="btn-s" onclick="closeModal()">Close</button>
+    </div>
+  `);
 }
 
 function e(s) {
@@ -241,7 +325,7 @@ function showModal(html) { document.getElementById('mb').innerHTML = html; docum
 
 
 
-// ── API calls ───────────────────────────────────────────────
+// ── API calls ─────────────────────────────────────────────
 async function loadLeads(showSpinner=false) {
   if (showSpinner) document.getElementById('ll').innerHTML = '<div class="loading">Loading from Supabase...</div>';
   const { data, error } = await supabaseClient.from('leads').select('*').order('dateReached', { ascending: false });
@@ -287,7 +371,7 @@ function updateSavingIndicator() {
   if (el) el.textContent = isSaving ? 'Saving to Sheets...' : '';
 }
 
-// ── Goal counter ────────────────────────────────────────────
+// ── Goal counter ──────────────────────────────────────────
 function updateGoal() {
   const ws = weekStart();
   const n = leads.filter(l => l.dateReached && l.dateReached >= ws).length;
@@ -297,7 +381,7 @@ function updateGoal() {
   document.getElementById('gpct').textContent = p + '%';
 }
 
-// ── Filters ─────────────────────────────────────────────────
+// ── Filters ───────────────────────────────────────────────
 function fillFilters() {
   const inds = [...new Set(leads.map(l => l.industry).filter(Boolean))].sort();
   const fi = document.getElementById('fi'), pv = fi.value;
@@ -317,7 +401,7 @@ function tabOk(l) {
   return true;
 }
 
-// ── Render ──────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────
 function render() {
   const q = (document.getElementById('si').value || '').toLowerCase();
   const fi = document.getElementById('fi').value;
@@ -372,7 +456,7 @@ function setTab(t) {
   render();
 }
 
-// ── Add lead ────────────────────────────────────────────────
+// ── Add lead ──────────────────────────────────────────────
 function openAdd() {
   showModal(`
     <div class="mhead"><h2>Add new lead</h2><button class="mcl" onclick="closeModal()">×</button></div>
@@ -423,7 +507,7 @@ async function doAdd() {
   if (res) toast('Lead added and saved to Sheets!');
 }
 
-// ── Detail / edit ───────────────────────────────────────────
+// ── Detail / edit ─────────────────────────────────────────
 function openDetail(id) {
   const l = leads.find(x => x.id === id);
   if (!l) return;
@@ -575,7 +659,7 @@ async function doDelete(id) {
   if (res) toast('Lead deleted');
 }
 
-// ── Calendar ────────────────────────────────────────────────
+// ── Calendar ──────────────────────────────────────────────
 async function schedCall(id) {
   const l = leads.find(x => x.id === id);
   if (!l) return;
@@ -659,7 +743,7 @@ function gcalFallback(brand, s, e2, email) {
   return url;
 }
 
-// ── Boot ────────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────
 loadLeads(true);
 </script>
 </body>
