@@ -1,662 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Privee Group — Lead Tracker</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f5;color:#1a1a1a;min-height:100vh;font-size:14px}
-.app{max-width:1100px;margin:0 auto;padding:1.5rem 1rem}
-
-/* ── Top bar ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
-.logo{font-size:18px;font-weight:700;color:#1a1a1a;letter-spacing:-0.02em}
-.logo span{color:#E078A1}
-.right-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.user-tabs{display:flex;gap:3px;background:#fff;border:0.5px solid #e0ddd8;border-radius:20px;padding:3px}
-.utab{padding:4px 14px;border-radius:16px;font-size:12px;border:none;cursor:pointer;background:transparent;color:#888;font-weight:500;transition:all 0.15s}
-.utab.active{background:#E078A1;color:#fff}
-.goal-box{background:#fff;border:0.5px solid #e0ddd8;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px}
-.goal-nums{font-size:12px;color:#888;white-space:nowrap}
-.goal-nums strong{color:#1a1a1a;font-size:15px}
-.goal-bar{width:90px;height:5px;background:#f0ede8;border-radius:3px}
-.goal-fill{height:100%;border-radius:3px;background:#E078A1;transition:width 0.4s}
-.goal-pct{font-size:11px;color:#aaa;min-width:28px;text-align:right}
-
-/* ── Config banner ── */
-.config-banner{background:#fff8e1;border:0.5px solid #ffe082;border-radius:10px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#7a5200;display:flex;align-items:center;gap:10px}
-.config-banner strong{font-weight:600}
-.config-banner input{flex:1;padding:6px 10px;border:0.5px solid #ffe082;border-radius:7px;font-size:12px;background:#fffde7;color:#1a1a1a;min-width:200px}
-.config-banner input:focus{outline:none;border-color:#E078A1}
-.btn-config{padding:6px 14px;background:#E078A1;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap}
-
-/* ── Tabs ── */
-.main-tabs{display:flex;border-bottom:1px solid #e0ddd8;margin-bottom:1rem}
-.mtab{padding:8px 20px;font-size:13px;border:none;background:transparent;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500}
-.mtab.active{color:#E078A1;border-bottom-color:#E078A1}
-
-/* ── Controls ── */
-.controls{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-.srch{flex:1;min-width:180px;padding:8px 12px;border:0.5px solid #e0ddd8;border-radius:10px;font-size:13px;background:#fff;color:#1a1a1a}
-.srch:focus{outline:none;border-color:#E078A1}
-select.flt{padding:8px 10px;border:0.5px solid #e0ddd8;border-radius:10px;font-size:13px;background:#fff;color:#1a1a1a;cursor:pointer}
-.btn-add{padding:8px 16px;background:#E078A1;color:#fff;border:none;border-radius:10px;font-size:13px;cursor:pointer;font-weight:600}
-.btn-add:hover{background:#c9608c}
-.btn-refresh{padding:8px 12px;background:#fff;border:0.5px solid #e0ddd8;border-radius:10px;font-size:13px;cursor:pointer;color:#888}
-.btn-refresh:hover{border-color:#aaa}
-
-/* ── Lead list ── */
-.lead-list{display:flex;flex-direction:column;gap:5px}
-.lead-row{background:#fff;border:0.5px solid #e0ddd8;border-radius:10px;padding:11px 15px;cursor:pointer;transition:border-color 0.15s}
-.lead-row:hover{border-color:#E078A1}
-.lead-row-inner{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.lr-brand{font-size:14px;font-weight:600;color:#1a1a1a;min-width:110px}
-.lr-handle{font-size:12px;color:#aaa}
-.lr-ind{font-size:11px;color:#888;background:#f5f3f0;padding:2px 8px;border-radius:8px}
-.sbadge{font-size:11px;padding:3px 9px;border-radius:8px;font-weight:600;white-space:nowrap}
-.s-Outreach{background:#fce8f1;color:#9e3060}
-.s-Responded{background:#e6f1fb;color:#185fa5}
-.s-DSched{background:#faeeda;color:#854f0b}
-.s-DDone{background:#d4f9ee;color:#0f6e56}
-.s-PWip{background:#eeedfe;color:#3c3489}
-.s-PSent{background:#e8e6fe;color:#3c3489}
-.s-Neg{background:#fff3cd;color:#7a5200}
-.s-Won{background:#eaf3de;color:#3b6d11}
-.s-Lost{background:#fcebeb;color:#a32d2d}
-.s-FollowUp{background:#f5f3f0;color:#555}
-.lr-user{font-size:11px;padding:2px 8px;border-radius:8px;background:#f5f3f0;color:#888;margin-left:auto}
-.lr-date{font-size:11px;color:#bbb}
-.lr-cal{font-size:11px;color:#89C4D8;font-weight:500}
-.empty{text-align:center;padding:3rem;color:#bbb;font-size:14px}
-.loading{text-align:center;padding:3rem;color:#aaa;font-size:13px}
-
-/* ── Modal ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:flex-start;justify-content:center;z-index:100;padding:1.5rem;overflow-y:auto}
-.modal{background:#fff;border-radius:16px;border:0.5px solid #e0ddd8;width:100%;max-width:640px;margin:auto;box-shadow:0 8px 40px rgba(0,0,0,0.12)}
-.mhead{padding:1.1rem 1.4rem;border-bottom:0.5px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.mhead h2{font-size:16px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mcl{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;flex-shrink:0}
-.mcl:hover{color:#555}
-.mbody{padding:1.25rem 1.4rem;max-height:72vh;overflow-y:auto}
-.mfoot{padding:1rem 1.4rem;border-top:0.5px solid #e0ddd8;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
-.saving-indicator{font-size:12px;color:#aaa;margin-right:auto}
-
-/* ── Form elements ── */
-.sec{margin-bottom:1.25rem}
-.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid #f0ede8}
-.fr{margin-bottom:12px}
-.fr label{display:block;font-size:11px;color:#888;margin-bottom:4px;font-weight:500}
-.fr input,.fr select,.fr textarea{width:100%;padding:8px 10px;border:0.5px solid #e0ddd8;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;font-family:inherit}
-.fr input:focus,.fr select:focus,.fr textarea:focus{outline:none;border-color:#E078A1}
-.fr textarea{resize:vertical;min-height:65px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn-p{padding:8px 16px;background:#E078A1;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600}
-.btn-p:hover{background:#c9608c}
-.btn-p:disabled{opacity:0.5;cursor:default}
-.btn-s{padding:8px 14px;background:transparent;border:0.5px solid #e0ddd8;border-radius:8px;font-size:13px;cursor:pointer;color:#888}
-.btn-s:hover{border-color:#aaa}
-.btn-d{padding:8px 14px;background:transparent;border:0.5px solid #fcc;border-radius:8px;font-size:13px;cursor:pointer;color:#c0392b}
-
-/* ── Stage selector ── */
-.stage-grid{display:flex;flex-wrap:wrap;gap:6px}
-.sopt{padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;border:0.5px solid #e0ddd8;background:#f8f7f5;color:#888;font-weight:500;transition:all 0.15s;user-select:none}
-.sopt.sel{border-color:#E078A1;color:#E078A1;background:#fce8f1}
-.sopt:hover:not(.sel){border-color:#ccc;background:#f0ede8}
-
-/* ── Calendar section ── */
-.cal-box{background:#f0f7fb;border-radius:10px;padding:14px;margin-top:6px}
-.cal-box h4{font-size:11px;color:#6aabb9;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
-.cal-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-.cal-row .cf{flex:1;min-width:130px}
-.cal-row .cf label{font-size:11px;color:#888;display:block;margin-bottom:3px;font-weight:500}
-.cal-row .cf input{width:100%;padding:7px 10px;border:0.5px solid #c8dfe8;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a}
-.cal-row .cf input:focus{outline:none;border-color:#89C4D8}
-.btn-cal{padding:8px 14px;background:#89C4D8;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0}
-.btn-cal:hover{background:#6aabb9}
-.btn-cal:disabled{opacity:0.5;cursor:default}
-.cal-link{font-size:12px;color:#185fa5;text-decoration:underline;cursor:pointer;margin-top:8px;display:inline-block;word-break:break-all}
-.cal-scheduled{font-size:12px;color:#0f6e56;margin-top:6px;background:#d4f9ee;padding:5px 10px;border-radius:6px;display:inline-block}
-
-/* ── Proposal flags ── */
-.flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.flag{font-size:12px;padding:4px 10px;border-radius:8px;cursor:pointer;border:0.5px solid #e0ddd8;background:#f8f7f5;color:#888;user-select:none;font-weight:500;transition:all 0.15s}
-.flag:hover{border-color:#ccc}
-.flag.on-green{background:#eaf3de;color:#3b6d11;border-color:#9FE1CB}
-.flag.on-red{background:#fcebeb;color:#a32d2d;border-color:#f0a0a0}
-.flag.on-blue{background:#e6f1fb;color:#185fa5;border-color:#B5D4F4}
-.flag.on-purple{background:#eeedfe;color:#3c3489;border-color:#CECBF6}
-.flag.on-amber{background:#faeeda;color:#854f0b;border-color:#FAC775}
-
-/* ── Toast ── */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;z-index:999;pointer-events:none;opacity:0;transition:opacity 0.25s;max-width:280px}
-.toast.show{opacity:1}
-.toast.error{background:#c0392b}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - The Privee Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f7f5;
+      position: relative;
+      overflow: hidden;
+      color: #1a1a1a;
+    }
+    
+    /* Dynamic background gradients */
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: 0;
+      animation: float 20s infinite alternate;
+    }
+    .shape-1 {
+      width: 600px;
+      height: 600px;
+      background: rgba(224, 120, 161, 0.4);
+      top: -200px;
+      left: -200px;
+    }
+    .shape-2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(137, 196, 216, 0.4);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -5s;
+    }
+    .shape-3 {
+      width: 400px;
+      height: 400px;
+      background: rgba(230, 230, 250, 0.6);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-duration: 25s;
+    }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+    
+    .login-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 24px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(224, 120, 161, 0.05);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    @keyframes fadeUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .logo span {
+      color: #E078A1;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 2.5rem;
+      font-weight: 400;
+    }
+    
+    .input-grp {
+      margin-bottom: 1.25rem;
+    }
+    .input-grp label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-grp input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(224, 221, 216, 0.8);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      font-family: inherit;
+      color: #1a1a1a;
+      transition: all 0.3s ease;
+    }
+    .input-grp input:focus {
+      outline: none;
+      border-color: #E078A1;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(224, 120, 161, 0.1);
+    }
+    .input-grp input::placeholder {
+      color: #bbb;
+    }
+    
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1.5rem;
+    }
+    .actions a {
+      font-size: 12px;
+      color: #888;
+      text-decoration: none;
+      transition: color 0.2s;
+      font-weight: 500;
+    }
+    .actions a:hover {
+      color: #E078A1;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #E078A1;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(224, 120, 161, 0.25);
+    }
+    .btn-submit:hover {
+      background: #c9608c;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(224, 120, 161, 0.35);
+    }
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -10px;
+      margin-left: -10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .btn-text {
+      display: inline-block;
+      transition: opacity 0.2s;
+    }
+    .btn-submit.loading .btn-text {
+      opacity: 0;
+    }
+    .btn-submit.loading .spinner {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
-<div class="app">
+  <!-- Dynamic aesthetic blobs -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
 
-  <!-- Config banner removed -->
-
-  <div class="topbar">
-     <div class="logo">The <span>Privee</span> Group <span style="color:#ccc;font-weight:300;margin:0 4px">—</span> Lead Tracker</div>
-    <div class="right-bar">
-      <div class="user-tabs">
-        <button class="utab active" onclick="setUser('all')">All</button>
-        <button class="utab" onclick="setUser('Privee')">Pri</button>
-        <button class="utab" onclick="setUser('Mayank')">Mayank</button>
+  <div class="login-wrapper">
+    <div class="logo">The <span>Privee</span> Group</div>
+    <div class="subtitle">Lead Tracker Portal</div>
+    
+    <form id="authForm">
+      <div class="input-grp">
+        <label for="email">Email</label>
+        <div class="input-wrapper">
+          <input type="email" id="email" placeholder="example@thepriveegroup.com" required autocomplete="email">
+        </div>
       </div>
-      <div class="goal-box">
-        <div class="goal-nums"><strong id="gc">0</strong> / 250 this week</div>
-        <div class="goal-bar"><div class="goal-fill" id="gf" style="width:0%"></div></div>
-        <div class="goal-pct" id="gpct">0%</div>
+      
+      <div class="input-grp">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
       </div>
-    </div>
+      
+      <div class="actions">
+        <a href="#">Forgot password?</a>
+      </div>
+      
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <span class="btn-text">Sign In</span>
+        <div class="spinner"></div>
+      </button>
+    </form>
   </div>
 
-  <div class="main-tabs">
-    <button class="mtab active" onclick="setTab('outreach')">Outreach</button>
-    <button class="mtab" onclick="setTab('pipeline')">Pipeline</button>
-    <button class="mtab" onclick="setTab('closed')">Closed</button>
-  </div>
-
-  <div class="controls">
-    <input class="srch" type="text" placeholder="Search brand or handle..." id="si" oninput="render()">
-    <select class="flt" id="fi" onchange="render()"><option value="">All industries</option></select>
-    <select class="flt" id="fs" onchange="render()"><option value="">All stages</option></select>
-    <button class="btn-refresh" onclick="loadLeads(true)" title="Refresh from Google Sheets">↻ Sync</button>
-    <button class="btn-add" onclick="openAdd()">+ Add lead</button>
-  </div>
-
-  <div class="lead-list" id="ll"><div class="loading">Connecting to Google Sheets...</div></div>
-</div>
-
-<!-- Modal -->
-<div class="overlay" id="ov" style="display:none" onclick="ovClick(event)">
-  <div class="modal" id="mb"></div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ── Config ──────────────────────────────────────────────────
-const supabaseUrl = 'https://vqgyjqjfmgkojgrvtacx.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZ3lqcWpmbWdrb2pncnZ0YWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MjA3NzQsImV4cCI6MjA5MTI5Njc3NH0.5ZDMBKXFZS6lMtRk-ZIQN4CER2w4PV_VYsI2IX88rl8';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-const STAGES = ['Outreach','Responded','Discovery Call Scheduled','Discovery Call Done','Proposal In Progress','Proposal Sent','Negotiation','Closed Won','Closed Lost','Following Up'];
-const IND = ['Clothing','Jewellery','Skin Care','Skin Care & Beauty','Cosmetic & Beauty','FMCG','Health & Wellness','Hair Care','Footwear','Accessories','Fashion Accessories','Furniture','Real Estate','Food & Beverage','Supplements','Dating App','Logistic App','Other'];
-
-const STAGE_CLS = {
-  'Outreach':'s-Outreach','Responded':'s-Responded',
-  'Discovery Call Scheduled':'s-DSched','Discovery Call Done':'s-DDone',
-  'Proposal In Progress':'s-PWip','Proposal Sent':'s-PSent',
-  'Negotiation':'s-Neg','Closed Won':'s-Won','Closed Lost':'s-Lost','Following Up':'s-FollowUp'
-};
-
-let leads = [];
-let activeUser = 'all';
-let activeTab = 'outreach';
-let isSaving = false;
-
-// ── Utilities ─────────────────────────────────────────────
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-
-function weekStart() {
-  const d = new Date(), day = d.getDay();
-  const m = new Date(d);
-  m.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-  m.setHours(0,0,0,0);
-  return m.toISOString().split('T')[0];
-}
-
-function e(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function fd(s) {
-  if (!s) return '';
-  try { return new Date(s + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}); }
-  catch(_) { return s; }
-}
-
-function toast(msg, ms=2800, isError=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.className = 'toast', ms);
-}
-
-function ovClick(ev) { if (ev.target === document.getElementById('ov')) closeModal(); }
-function closeModal() { document.getElementById('ov').style.display='none'; document.getElementById('mb').innerHTML=''; }
-function showModal(html) { document.getElementById('mb').innerHTML = html; document.getElementById('ov').style.display='flex'; }
-
-
-
-// ── API calls ─────────────────────────────────────────────
-async function loadLeads(showSpinner=false) {
-  if (showSpinner) document.getElementById('ll').innerHTML = '<div class="loading">Loading from Supabase...</div>';
-  const { data, error } = await supabaseClient.from('leads').select('*').order('dateReached', { ascending: false });
-  if (error) {
-    toast('Sync error: ' + error.message, 4000, true);
-    return;
-  }
-  if (data) {
-    leads = data;
-    updateGoal();
-    fillFilters();
-    render();
-    if (showSpinner) toast('Synced from Supabase');
-  }
-}
-
-async function saveLead(lead) {
-  isSaving = true;
-  updateSavingIndicator();
-  lead.updatedAt = new Date().toISOString();
-  // Strip any properties that don't belong in the table if they exist, but we matched the schema so we pass lead directly
-  const { data, error } = await supabaseClient.from('leads').upsert(lead).select();
-  isSaving = false;
-  updateSavingIndicator();
-  if (error) {
-    toast('Error saving lead: ' + error.message, 4000, true);
-    return null;
-  }
-  return data;
-}
-
-async function deleteLeadApi(id) {
-  const { data, error } = await supabaseClient.from('leads').delete().eq('id', id);
-  if (error) {
-    toast('Error deleting lead: ' + error.message, 4000, true);
-    return null;
-  }
-  return true;
-}
-
-function updateSavingIndicator() {
-  const el = document.getElementById('saving-ind');
-  if (el) el.textContent = isSaving ? 'Saving to Sheets...' : '';
-}
-
-// ── Goal counter ──────────────────────────────────────────
-function updateGoal() {
-  const ws = weekStart();
-  const n = leads.filter(l => l.dateReached && l.dateReached >= ws).length;
-  document.getElementById('gc').textContent = n;
-  const p = Math.min(100, Math.round(n / 250 * 100));
-  document.getElementById('gf').style.width = p + '%';
-  document.getElementById('gpct').textContent = p + '%';
-}
-
-// ── Filters ───────────────────────────────────────────────
-function fillFilters() {
-  const inds = [...new Set(leads.map(l => l.industry).filter(Boolean))].sort();
-  const fi = document.getElementById('fi'), pv = fi.value;
-  fi.innerHTML = '<option value="">All industries</option>' + inds.map(i => `<option value="${e(i)}">${e(i)}</option>`).join('');
-  fi.value = pv;
-
-  const fs = document.getElementById('fs'), ps = fs.value;
-  fs.innerHTML = '<option value="">All stages</option>' + STAGES.map(s => `<option value="${e(s)}">${e(s)}</option>`).join('');
-  fs.value = ps;
-}
-
-function tabOk(l) {
-  const s = l.stage || 'Outreach';
-  if (activeTab === 'outreach') return ['Outreach','Responded'].includes(s);
-  if (activeTab === 'pipeline') return ['Discovery Call Scheduled','Discovery Call Done','Proposal In Progress','Proposal Sent','Negotiation','Following Up'].includes(s);
-  if (activeTab === 'closed') return ['Closed Won','Closed Lost'].includes(s);
-  return true;
-}
-
-// ── Render ────────────────────────────────────────────────
-function render() {
-  const q = (document.getElementById('si').value || '').toLowerCase();
-  const fi = document.getElementById('fi').value;
-  const fs = document.getElementById('fs').value;
-
-  const filtered = leads.filter(l => {
-    if (activeUser !== 'all' && l.user !== activeUser) return false;
-    if (!tabOk(l)) return false;
-    if (fi && l.industry !== fi) return false;
-    if (fs && l.stage !== fs) return false;
-    if (q && !((l.brand||'').toLowerCase().includes(q) || (l.handle||'').toLowerCase().includes(q))) return false;
-    return true;
-  }).sort((a,b) => (b.dateReached||'').localeCompare(a.dateReached||''));
-
-  const ll = document.getElementById('ll');
-  if (!filtered.length) {
-    ll.innerHTML = '<div class="empty">No leads here yet — add one above</div>';
-    return;
-  }
-
-  ll.innerHTML = filtered.map(l => {
-    const s = l.stage || 'Outreach';
-    const sc = STAGE_CLS[s] || 's-Outreach';
-    return `<div class="lead-row" onclick="openDetail('${l.id}')">
-      <div class="lead-row-inner">
-        <div>
-          <div class="lr-brand">${e(l.brand||'Unnamed')}</div>
-          <div class="lr-handle">${l.handle ? '@'+e(l.handle) : ''}</div>
-        </div>
-        ${l.industry ? `<span class="lr-ind">${e(l.industry)}</span>` : ''}
-        <span class="sbadge ${sc}">${e(s)}</span>
-        ${l.calEventLink ? '<span class="lr-cal">📅 Call set</span>' : ''}
-        <span class="lr-user">${e(l.user||'')}</span>
-        <span class="lr-date">${l.dateReached ? fd(l.dateReached) : ''}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function setUser(u) {
-  activeUser = u;
-  document.querySelectorAll('.utab').forEach(b => {
-    const map = { all:'All', Privee:'Pri', Mayank:'Mayank' };
-    b.classList.toggle('active', b.textContent.trim() === map[u]);
-  });
-  render();
-}
-
-function setTab(t) {
-  activeTab = t;
-  document.querySelectorAll('.mtab').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes("'"+t+"'")));
-  render();
-}
-
-// ── Add lead ──────────────────────────────────────────────
-function openAdd() {
-  showModal(`
-    <div class="mhead"><h2>Add new lead</h2><button class="mcl" onclick="closeModal()">×</button></div>
-    <div class="mbody">
-      <div class="g2">
-        <div class="fr"><label>Brand name *</label><input id="nb" placeholder="e.g. Vividfine Jewels"></div>
-        <div class="fr"><label>Instagram handle</label><input id="nh" placeholder="@handle"></div>
-      </div>
-      <div class="g2">
-        <div class="fr"><label>Industry</label>
-          <select id="ni"><option value="">Select...</option>${IND.map(i=>`<option>${i}</option>`).join('')}</select>
-        </div>
-        <div class="fr"><label>Assigned to</label>
-          <select id="nu"><option value="Privee">Pri</option><option value="Mayank">Mayank</option></select>
-        </div>
-      </div>
-      <div class="fr"><label>Date reached out</label><input type="date" id="nd" value="${new Date().toISOString().split('T')[0]}"></div>
-    </div>
-    <div class="mfoot">
-      <span class="saving-indicator" id="saving-ind"></span>
-      <button class="btn-s" onclick="closeModal()">Cancel</button>
-      <button class="btn-p" id="add-btn" onclick="doAdd()">Add lead</button>
-    </div>
-  `);
-}
-
-async function doAdd() {
-  const brand = (document.getElementById('nb').value || '').trim();
-  if (!brand) { toast('Brand name required'); return; }
-  const btn = document.getElementById('add-btn');
-  btn.disabled = true; btn.textContent = 'Saving...';
-
-  const lead = {
-    id: uid(), brand,
-    handle: (document.getElementById('nh').value || '').replace(/^@/,''),
-    industry: document.getElementById('ni').value,
-    user: document.getElementById('nu').value,
-    dateReached: document.getElementById('nd').value,
-    stage: 'Outreach',
-    createdAt: new Date().toISOString()
-  };
-
-  leads.unshift(lead);
-  updateGoal(); fillFilters(); render();
-  closeModal();
-
-  const res = await saveLead(lead);
-  if (res) toast('Lead added and saved to Sheets!');
-}
-
-// ── Detail / edit ─────────────────────────────────────────
-function openDetail(id) {
-  const l = leads.find(x => x.id === id);
-  if (!l) return;
-  const s = l.stage || 'Outreach';
-  const responded = s !== 'Outreach';
-  const isPipeline = ['Discovery Call Scheduled','Discovery Call Done','Proposal In Progress','Proposal Sent','Negotiation','Closed Won','Closed Lost','Following Up'].includes(s);
-
-  const stageOpts = STAGES.map(st =>
-    `<span class="sopt${s===st?' sel':''}" onclick="setStage('${l.id}','${e(st)}')">${e(st)}</span>`
-  ).join('');
-
-  const contactSection = responded ? `
-    <div class="sec">
-      <div class="sec-title">Contact details</div>
-      <div class="g2">
-        <div class="fr"><label>POC name</label><input id="dp" value="${e(l.poc||'')}"></div>
-        <div class="fr"><label>Phone</label><input id="dph" value="${e(l.phone||'')}"></div>
-      </div>
-      <div class="fr"><label>Email</label><input id="dem" value="${e(l.email||'')}"></div>
-      <div class="fr"><label>Website</label><input id="dwb" value="${e(l.website||'')}" placeholder="https://..."></div>
-      <div class="fr"><label>Requirements</label><textarea id="dreq">${e(l.requirements||'')}</textarea></div>
-      <div class="fr"><label>Notes</label><textarea id="dnt">${e(l.notes||'')}</textarea></div>
-    </div>
-    <div class="sec">
-      <div class="sec-title">Discovery call</div>
-      <div class="cal-box">
-        <h4>Schedule via Google Calendar</h4>
-        <div class="cal-row">
-          <div class="cf"><label>Date &amp; time (IST)</label><input type="datetime-local" id="cdt" value="${e(l.callDatetime||'')}"></div>
-          <div class="cf"><label>Client email (optional)</label><input id="cat" placeholder="client@brand.com" value="${e(l.email||'')}"></div>
-          <button class="btn-cal" id="cbtn" onclick="schedCall('${l.id}')">Create event</button>
-        </div>
-        ${l.calEventLink ? `<a class="cal-link" href="${e(l.calEventLink)}" target="_blank">View calendar event →</a>` : ''}
-        ${l.callDatetime ? `<div class="cal-scheduled">Scheduled: ${e(l.callDatetime.replace('T',' at '))}</div>` : ''}
-      </div>
-    </div>` : '';
-
-  const proposalSection = isPipeline ? `
-    <div class="sec">
-      <div class="sec-title">Proposal &amp; deal tracking</div>
-      <div class="g2">
-        <div class="fr"><label>Proposal deadline</label><input type="date" id="dpd" value="${e(l.proposalDeadline||'')}"></div>
-        <div class="fr"><label>Proposal sent date</label><input type="date" id="dps" value="${e(l.proposalSentDate||'')}"></div>
-      </div>
-      <div class="fr"><label>Negotiation notes</label><textarea id="dnn">${e(l.negNotes||'')}</textarea></div>
-      <div class="flags">
-        <span class="flag${l.proposalWip?' on-purple':''}" onclick="tflag('${l.id}','proposalWip',this,'on-purple')">Proposal in progress</span>
-        <span class="flag${l.proposalSent?' on-blue':''}" onclick="tflag('${l.id}','proposalSent',this,'on-blue')">Proposal sent</span>
-        <span class="flag${l.callCompleted?' on-green':''}" onclick="tflag('${l.id}','callCompleted',this,'on-green')">Call completed</span>
-        <span class="flag${l.followingUp?' on-amber':''}" onclick="tflag('${l.id}','followingUp',this,'on-amber')">Following up</span>
-        <span class="flag${l.closedWon?' on-green':''}" onclick="tflag('${l.id}','closedWon',this,'on-green')">Closed won</span>
-        <span class="flag${l.closedLost?' on-red':''}" onclick="tflag('${l.id}','closedLost',this,'on-red')">Closed lost</span>
-      </div>
-    </div>` : '';
-
-  showModal(`
-    <div class="mhead">
-      <h2>${e(l.brand)}</h2>
-      <button class="mcl" onclick="closeModal()">×</button>
-    </div>
-    <div class="mbody">
-      <div class="sec">
-        <div class="sec-title">Basic info</div>
-        <div class="g2">
-          <div class="fr"><label>Brand name</label><input id="db" value="${e(l.brand||'')}"></div>
-          <div class="fr"><label>Instagram handle</label><input id="dh" value="${e(l.handle||'')}"></div>
-        </div>
-        <div class="g2">
-          <div class="fr"><label>Industry</label>
-            <select id="di"><option value="">Select...</option>${IND.map(i=>`<option${l.industry===i?' selected':''}>${i}</option>`).join('')}</select>
-          </div>
-          <div class="fr"><label>Assigned to</label>
-            <select id="du"><option value="Privee"${l.user==='Privee'?' selected':''}>Pri</option><option value="Mayank"${l.user==='Mayank'?' selected':''}>Mayank</option></select>
-          </div>
-        </div>
-        <div class="fr"><label>Date reached out</label><input type="date" id="dd" value="${e(l.dateReached||'')}"></div>
-      </div>
-      <div class="sec">
-        <div class="sec-title">Pipeline stage</div>
-        <div class="stage-grid">${stageOpts}</div>
-      </div>
-      ${contactSection}
-      ${proposalSection}
-    </div>
-    <div class="mfoot">
-      <span class="saving-indicator" id="saving-ind"></span>
-      <button class="btn-d" onclick="doDelete('${l.id}')">Delete</button>
-      <button class="btn-s" onclick="closeModal()">Cancel</button>
-      <button class="btn-p" id="save-btn" onclick="doUpdate('${l.id}')">Save changes</button>
-    </div>
-  `);
-}
-
-async function setStage(id, s) {
-  const l = leads.find(x => x.id === id);
-  if (!l) return;
-  l.stage = s;
-  render();
-  openDetail(id);
-  await saveLead(l);
-  toast('Stage updated');
-}
-
-function tflag(id, flag, el, cls) {
-  const l = leads.find(x => x.id === id);
-  if (!l) return;
-  l[flag] = !l[flag];
-  el.className = 'flag' + (l[flag] ? ' ' + cls : '');
-  render();
-  saveLead(l);
-}
-
-function gv(id) { const el = document.getElementById(id); return el ? el.value : null; }
-
-async function doUpdate(id) {
-  const l = leads.find(x => x.id === id);
-  if (!l) return;
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true; btn.textContent = 'Saving...';
-
-  l.brand = gv('db') || l.brand;
-  l.handle = (gv('dh') || '').replace(/^@/,'');
-  l.industry = gv('di') || l.industry;
-  l.user = gv('du') || l.user;
-  l.dateReached = gv('dd') || l.dateReached;
-  if (gv('dp') !== null) l.poc = gv('dp');
-  if (gv('dph') !== null) l.phone = gv('dph');
-  if (gv('dem') !== null) l.email = gv('dem');
-  if (gv('dwb') !== null) l.website = gv('dwb');
-  if (gv('dreq') !== null) l.requirements = gv('dreq');
-  if (gv('dnt') !== null) l.notes = gv('dnt');
-  if (gv('dpd') !== null) l.proposalDeadline = gv('dpd');
-  if (gv('dps') !== null) l.proposalSentDate = gv('dps');
-  if (gv('dnn') !== null) l.negNotes = gv('dnn');
-  if (gv('cdt') !== null) l.callDatetime = gv('cdt');
-
-  updateGoal(); fillFilters(); render();
-  closeModal();
-  const res = await saveLead(l);
-  if (res) toast('Saved to Google Sheets!');
-}
-
-async function doDelete(id) {
-  if (!confirm('Delete this lead permanently from Google Sheets?')) return;
-  leads = leads.filter(x => x.id !== id);
-  updateGoal(); fillFilters(); render();
-  closeModal();
-  const res = await deleteLeadApi(id);
-  if (res) toast('Lead deleted');
-}
-
-// ── Calendar ──────────────────────────────────────────────
-async function schedCall(id) {
-  const l = leads.find(x => x.id === id);
-  if (!l) return;
-  const dt = document.getElementById('cdt')?.value;
-  if (!dt) { toast('Pick a date and time first', 2500, true); return; }
-  const clientEmail = document.getElementById('cat')?.value || '';
-  const btn = document.getElementById('cbtn');
-  btn.disabled = true; btn.textContent = 'Creating...';
-
-  const startISO = new Date(dt).toISOString();
-  const endISO = new Date(new Date(dt).getTime() + 60*60*1000).toISOString();
-
-  try {
-    const body = {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `Use the Google Calendar gcal_create_event tool. Title: "Discovery Call — ${l.brand} x The Privee Group". calendarId: "primary". Start: ${startISO}, End: ${endISO}, timeZone: Asia/Kolkata. Description: "Discovery call to explore a potential marketing partnership between ${l.brand} and The Privee Group."${clientEmail ? ` Add attendee: ${clientEmail}.` : ''} After creating it, respond ONLY with raw JSON (no markdown, no explanation): {"success":true,"htmlLink":"<link>","eventId":"<id>"}`
-      }],
-      mcp_servers: [{ type:'url', url:'https://gcal.mcp.claude.com/mcp', name:'gcal' }]
-    };
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+  <script>
+    document.getElementById('authForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('loading');
+      btn.style.pointerEvents = 'none';
+      
+      // Artificial delay to show off the premium feel and simulate auth
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 800);
     });
-    const data = await resp.json();
-    let htmlLink = '', success = false;
-
-    if (data.content) {
-      for (const blk of data.content) {
-        if (blk.type === 'text' && blk.text) {
-          try {
-            const p = JSON.parse(blk.text.replace(/```json|```/g,'').trim());
-            if (p.htmlLink) { htmlLink = p.htmlLink; success = true; }
-          } catch(_) {}
-        }
-        if (blk.type === 'mcp_tool_result') {
-          try {
-            const p = JSON.parse(blk.content?.[0]?.text || '{}');
-            if (p.htmlLink) { htmlLink = p.htmlLink; success = true; }
-          } catch(_) {}
-        }
-      }
-    }
-
-    l.callDatetime = dt;
-    l.calEventLink = htmlLink || gcalFallback(l.brand, startISO, endISO, clientEmail);
-    l.stage = 'Discovery Call Scheduled';
-    if (clientEmail) l.email = clientEmail;
-
-    render();
-    await saveLead(l);
-
-    if (success) {
-      toast('Calendar event created!');
-      openDetail(id);
-    } else {
-      toast('Opening Google Calendar to confirm...', 3000);
-      openDetail(id);
-      setTimeout(() => window.open(l.calEventLink, '_blank'), 400);
-    }
-  } catch(err) {
-    l.callDatetime = dt;
-    l.calEventLink = gcalFallback(l.brand, startISO, endISO, clientEmail);
-    l.stage = 'Discovery Call Scheduled';
-    render();
-    await saveLead(l);
-    toast('Opening Google Calendar...', 3000);
-    openDetail(id);
-    setTimeout(() => window.open(l.calEventLink, '_blank'), 400);
-  }
-}
-
-function gcalFallback(brand, s, e2, email) {
-  const fmt = x => x.replace(/[-:]/g,'').replace(/\..+/,'') + 'Z';
-  let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Discovery Call — '+brand+' x The Privee Group')}&dates=${fmt(s)}/${fmt(e2)}&details=${encodeURIComponent('Discovery call to explore a potential marketing partnership between '+brand+' and The Privee Group.')}`;
-  if (email) url += `&add=${encodeURIComponent(email)}`;
-  return url;
-}
-
-// ── Boot ──────────────────────────────────────────────────
-loadLeads(true);
-</script>
+  </script>
 </body>
 </html>
